@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SK Panel - Admin</title>
+    <style>
+        body {
+            background-color: #0f1219;
+            color: #fff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background-color: #181e2a;
+            padding: 30px;
+            border-radius: 8px;
+            width: 350px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            border: 1px solid #2a3548;
+        }
+        h2 {
+            text-align: center;
+            color: #00c8ff;
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #a0b0c0;
+            font-size: 14px;
+        }
+        select, button, input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border-radius: 6px;
+            border: 1px solid #2a3548;
+            background-color: #222a3a;
+            color: #fff;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        select:focus, input:focus {
+            outline: none;
+            border-color: #00c8ff;
+        }
+        button {
+            background-color: #00c8ff;
+            color: #000;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+            border: none;
+        }
+        button:hover {
+            background-color: #009fcc;
+        }
+        button:disabled {
+            background-color: #555;
+            cursor: not-allowed;
+        }
+        .resultado {
+            margin-top: 20px;
+            background-color: #0d1117;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #00c8ff;
+            display: none;
+        }
+        .resultado span {
+            font-family: monospace;
+            color: #00ff88;
+            font-size: 18px;
+            display: block;
+            text-align: center;
+            margin-top: 5px;
+            word-break: break-all;
+            font-weight: bold;
+        }
+        .aviso {
+            font-size: 12px;
+            color: #888;
+            text-align: center;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container" id="painelAdmin" style="display: none;">
+    <h2>SK PANEL - KEYGEN</h2>
+    
+    <label>Tempo da Key:</label>
+    <select id="tempoSelect">
+        <option value="1">1 Dia</option>
+        <option value="7">7 Dias</option>
+        <option value="30">30 Dias</option>
+        <option value="9999">Permanente</option>
+    </select>
+
+    <button id="btnGerar" onclick="gerarKey()">Gerar Key</button>
+
+    <div class="resultado" id="resultadoBox">
+        <strong style="text-align:center; display:block; color:#fff;">Sua Key é:</strong>
+        <span id="keyGerada"></span>
+        <div class="aviso">Copie e envie ao cliente.</div>
+    </div>
+</div>
+
+<div class="container" id="loginBox">
+    <h2>Login Admin</h2>
+    <label>Senha:</label>
+    <input type="password" id="senhaInput" placeholder="Digite a senha...">
+    <button onclick="logar()">Entrar</button>
+</div>
+
+<script>
+    // ============================================================
+    // ⚠️ CONFIGURAÇÕES DO SEU GITHUB (SUBSTITUA AQUI) ⚠️
+    // ============================================================
+    const GITHUB_USER = "azevedoconceicaoeduardo500-beep"; 
+    const GIST_ID = "73b20fea157d4dde5079c1f55e4ea062";
+    const GITHUB_TOKEN = "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"; 
+    const SENHA_MESTRA = "duzinn18599z"; // Senha atualizada
+    // ============================================================
+
+    function logar() {
+        const senha = document.getElementById("senhaInput").value;
+        if (senha === SENHA_MESTRA) {
+            document.getElementById("loginBox").style.display = "none";
+            document.getElementById("painelAdmin").style.display = "block";
+        } else {
+            alert("Senha incorreta!");
+        }
+    }
+
+    async function gerarKey() {
+        const btn = document.getElementById("btnGerar");
+        btn.innerText = "Gerando e Salvando...";
+        btn.disabled = true;
+
+        const dias = parseInt(document.getElementById("tempoSelect").value);
+        
+        // Gera uma key aleatória (Ex: SK-A1B2C3-D4E5)
+        const key = "SK-" + Math.random().toString(36).substring(2, 8).toUpperCase() + "-" + Math.random().toString(36).substring(2, 6).toUpperCase();
+        
+        const agora = Math.floor(Date.now() / 1000);
+        let expiracao;
+        if (dias === 9999) { expiracao = 2147483647; } 
+        else { expiracao = agora + (dias * 86400); }
+
+        try {
+            // 1. Puxa o arquivo atual do GitHub
+            const getRes = await fetch(`https://api.github.com/gists/${GIST_ID}`, {
+                headers: { "Authorization": `token ${GITHUB_TOKEN}` }
+            });
+            const gistData = await getRes.json();
+            
+            // Pega o nome do arquivo e o conteúdo (que é o JSON de keys)
+            const filename = Object.keys(gistData.files)[0];
+            let keysJsonString = gistData.files[filename].content;
+            let keysObj = JSON.parse(keysJsonString);
+
+            // 2. Adiciona a nova key
+            keysObj[key] = { "Expira": expiracao };
+
+            // 3. Salva de volta no GitHub
+            const patchRes = await fetch(`https://api.github.com/gists/${GIST_ID}`, {
+                method: 'PATCH',
+                headers: {
+                    "Authorization": `token ${GITHUB_TOKEN}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    files: {
+                        [filename]: {
+                            content: JSON.stringify(keysObj, null, 2)
+                        }
+                    }
+                })
+            });
+
+            if (patchRes.ok) {
+                document.getElementById("keyGerada").innerText = key;
+                document.getElementById("resultadoBox").style.display = "block";
+            } else {
+                alert("Erro ao salvar no GitHub. Verifique o Token.");
+            }
+        } catch (error) {
+            alert("Erro de conexão: " + error.message);
+        }
+
+        btn.innerText = "Gerar Key";
+        btn.disabled = false;
+    }
+</script>
+</body>
+</html>
