@@ -9,10 +9,11 @@
         .container { background-color: #181e2a; padding: 30px; border-radius: 8px; width: 350px; border: 1px solid #2a3548; }
         h2 { text-align: center; color: #00c8ff; }
         label { display: block; margin-bottom: 5px; color: #a0b0c0; }
-        select, button, input { width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 6px; border: 1px solid #2a3548; background-color: #222a3a; color: #fff; box-sizing: border-box; }
+        select, button, input, textarea { width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 6px; border: 1px solid #2a3548; background-color: #222a3a; color: #fff; box-sizing: border-box; }
         button { background-color: #00c8ff; color: #000; font-weight: bold; cursor: pointer; }
-        .resultado { margin-top: 20px; background-color: #0d1117; padding: 15px; border-radius: 6px; border: 1px solid #00c8ff; display: none; text-align: center; }
-        .resultado span { font-family: monospace; color: #00ff88; font-size: 18px; display: block; margin-top: 5px; font-weight: bold; }
+        .resultado { margin-top: 20px; background-color: #0d1117; padding: 15px; border-radius: 6px; border: 1px solid #00c8ff; display: none; }
+        .resultado span { font-family: monospace; color: #00ff88; font-size: 16px; display: block; margin-top: 5px; font-weight: bold; word-break: break-all; }
+        textarea { height: 80px; font-family: monospace; font-size: 12px; color: #00ff88; }
     </style>
 </head>
 <body>
@@ -27,9 +28,13 @@
         <option value="9999">Permanente</option>
     </select>
     <button id="btnGerar" onclick="gerarKey()">Gerar Key</button>
+
     <div class="resultado" id="resultadoBox">
         <strong>Sua Key é:</strong>
         <span id="keyGerada"></span>
+        
+        <p style="font-size:12px; color:#888; margin-top:15px; margin-bottom:5px;">Copie o texto abaixo e cole no seu Gist:</p>
+        <textarea id="jsonGerado" readonly></textarea>
     </div>
 </div>
 
@@ -41,8 +46,6 @@
 </div>
 
 <script>
-    // LINK DIRETO DO GIST (NÃO PRECISA DE TOKEN)
-    const GIST_RAW_URL = "https://gist.githubusercontent.com/azevedoconceicaoeduardo500-beep/73b20fea157d4dde5079c1f55e4ea062/raw"; 
     const SENHA_MESTRA = "duzinn18599z"; 
 
     function logar() {
@@ -54,42 +57,21 @@
         }
     }
 
-    async function gerarKey() {
-        const btn = document.getElementById("btnGerar");
-        btn.innerText = "Gerando...";
-        btn.disabled = true;
-
+    function gerarKey() {
         const dias = parseInt(document.getElementById("tempoSelect").value);
         const key = "SK-" + Math.random().toString(36).substring(2, 8).toUpperCase();
         
         const agora = Math.floor(Date.now() / 1000);
         const expiracao = (dias === 9999) ? 2147483647 : agora + (dias * 86400);
 
-        try {
-            // 1. Baixa a lista atual de keys
-            const res = await fetch(GIST_RAW_URL);
-            let text = await res.text();
-            
-            // Se o arquivo estiver vazio, cria um objeto vazio
-            let obj = text && text.trim() !== "" ? JSON.parse(text) : {};
-            
-            // 2. Adiciona a nova key
-            obj[key] = { "Expira": expiracao };
-
-            // 3. Mostra a key para você (O salvamento automático precisa do Token, 
-            // então vamos usar um método alternativo para não dar erro)
-            document.getElementById("keyGerada").innerText = key;
-            document.getElementById("resultadoBox").style.display = "block";
-            
-            // Cria o link para o seu Gist para você atualizar manualmente
-            console.log("Copie isso e cole no Gist:", JSON.stringify(obj, null, 2));
-
-        } catch (error) {
-            alert("Erro ao ler o banco de dados do Gist.");
-        }
-
-        btn.innerText = "Gerar Key";
-        btn.disabled = false;
+        // Mostra a Key na tela
+        document.getElementById("keyGerada").innerText = key;
+        
+        // Gera o texto JSON para colar no Gist
+        const jsonText = JSON.stringify({ [key]: { "Expira": expiracao } }, null, 2);
+        document.getElementById("jsonGerado").value = jsonText;
+        
+        document.getElementById("resultadoBox").style.display = "block";
     }
 </script>
 </body>
