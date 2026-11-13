@@ -122,12 +122,11 @@
 
 <script>
     // ============================================================
-    // ⚠️ CONFIGURAÇÕES DO SEU GITHUB (SUBSTITUA AQUI) ⚠️
+    // ⚠️ CONFIGURAÇÕES DO SEU GITHUB (JÁ PREENCHIDO) ⚠️
     // ============================================================
-    const GITHUB_USER = "azevedoconceicaoeduardo500-beep"; 
-    const GIST_ID = "73b20fea157d4dde5079c1f55e4ea062";
+    const GIST_RAW_URL = "https://gist.githubusercontent.com/azevedoconceicaoeduardo500-beep/73b20fea157d4dde5079c1f55e4ea062/raw"; 
     const GITHUB_TOKEN = "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"; 
-    const SENHA_MESTRA = "duzinn18599z"; // Senha atualizada
+    const SENHA_MESTRA = "duzinn18599z"; 
     // ============================================================
 
     function logar() {
@@ -156,22 +155,17 @@
         else { expiracao = agora + (dias * 86400); }
 
         try {
-            // 1. Puxa o arquivo atual do GitHub
-            const getRes = await fetch(`https://api.github.com/gists/${GIST_ID}`, {
-                headers: { "Authorization": `token ${GITHUB_TOKEN}` }
-            });
-            const gistData = await getRes.json();
-            
-            // Pega o nome do arquivo e o conteúdo (que é o JSON de keys)
-            const filename = Object.keys(gistData.files)[0];
-            let keysJsonString = gistData.files[filename].content;
-            let keysObj = JSON.parse(keysJsonString);
+            // 1. Puxa o arquivo atual usando o link RAW
+            const getRes = await fetch(GIST_RAW_URL);
+            const textData = await getRes.text();
+            let keysObj = textData ? JSON.parse(textData) : {};
 
             // 2. Adiciona a nova key
             keysObj[key] = { "Expira": expiracao };
 
             // 3. Salva de volta no GitHub
-            const patchRes = await fetch(`https://api.github.com/gists/${GIST_ID}`, {
+            const gistId = "73b20fea157d4dde5079c1f55e4ea062";
+            const patchRes = await fetch(`https://api.github.com/gists/${gistId}`, {
                 method: 'PATCH',
                 headers: {
                     "Authorization": `token ${GITHUB_TOKEN}`,
@@ -179,7 +173,7 @@
                 },
                 body: JSON.stringify({
                     files: {
-                        [filename]: {
+                        "keys.json": {
                             content: JSON.stringify(keysObj, null, 2)
                         }
                     }
